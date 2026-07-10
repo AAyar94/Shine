@@ -165,8 +165,20 @@ final class DisplayManager {
         return displays.first { $0.displayID == id }
     }
 
-    /// Default target for volume keys: the first external display.
-    var volumeTarget: ExternalDisplay? { displays.first }
+    /// Displays targeted by the volume keys: the monitor acting as the
+    /// current audio output when we can identify it by name; otherwise all
+    /// of them, so the audible one always changes.
+    var volumeKeyTargets: [ExternalDisplay] {
+        if let audioName = AudioOutput.defaultOutputDeviceName() {
+            let matches = displays.filter {
+                $0.name.caseInsensitiveCompare(audioName) == .orderedSame
+                    || audioName.localizedCaseInsensitiveContains($0.name)
+                    || $0.name.localizedCaseInsensitiveContains(audioName)
+            }
+            if !matches.isEmpty { return matches }
+        }
+        return displays
+    }
 
     private static func name(for displayID: CGDirectDisplayID) -> String {
         NSScreen.screens.first {

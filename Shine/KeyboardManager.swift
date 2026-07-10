@@ -125,18 +125,25 @@ extension AppState {
             return true // swallow key-up too so the system never sees the key
 
         case .soundUp, .soundDown:
-            guard volumeKeysEnabled, let target = displayManager.volumeTarget else { return false }
+            let targets = displayManager.volumeKeyTargets
+            guard volumeKeysEnabled, let lead = targets.first else { return false }
             if isPressed {
-                target.stepVolume(up: key == .soundUp)
-                OSD.shared.show(.volume, level: target.muted ? 0 : target.volume, on: target.screen)
+                for target in targets {
+                    target.stepVolume(up: key == .soundUp)
+                }
+                OSD.shared.show(.volume, level: lead.muted ? 0 : lead.volume, on: lead.screen)
             }
             return true
 
         case .mute:
-            guard volumeKeysEnabled, let target = displayManager.volumeTarget else { return false }
+            let targets = displayManager.volumeKeyTargets
+            guard volumeKeysEnabled, let lead = targets.first else { return false }
             if isPressed, !isRepeat {
-                target.setMuted(!target.muted)
-                OSD.shared.show(.volume, level: target.muted ? 0 : target.volume, on: target.screen)
+                let newMuted = !lead.muted
+                for target in targets {
+                    target.setMuted(newMuted)
+                }
+                OSD.shared.show(.volume, level: newMuted ? 0 : lead.volume, on: lead.screen)
             }
             return true
         }
