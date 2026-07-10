@@ -18,6 +18,11 @@ final class AppState {
 
     var accessibilityGranted = false
 
+    /// The menu bar icon can be hidden; relaunching the app shows it again.
+    var menuBarIconVisible: Bool = UserDefaults.standard.object(forKey: "menuBarIconVisible") as? Bool ?? true {
+        didSet { UserDefaults.standard.set(menuBarIconVisible, forKey: "menuBarIconVisible") }
+    }
+
     var brightnessKeysEnabled: Bool = UserDefaults.standard.object(forKey: "brightnessKeys") as? Bool ?? true {
         didSet { UserDefaults.standard.set(brightnessKeysEnabled, forKey: "brightnessKeys") }
     }
@@ -55,14 +60,26 @@ final class AppState {
     }
 }
 
+/// Restores the menu bar icon when the user opens the app while it is
+/// already running (e.g. from Launchpad or Finder after hiding the icon).
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
+        AppState.shared.menuBarIconVisible = true
+        return true
+    }
+}
+
 @main
 struct ShineApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+
     init() {
         AppState.shared.start()
     }
 
     var body: some Scene {
-        MenuBarExtra("Shine", systemImage: "sun.max.fill") {
+        MenuBarExtra("Shine", systemImage: "sun.max.fill",
+                     isInserted: Bindable(AppState.shared).menuBarIconVisible) {
             MenuView()
                 .environment(AppState.shared)
         }

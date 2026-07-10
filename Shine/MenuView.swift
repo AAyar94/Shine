@@ -44,6 +44,9 @@ struct MenuView: View {
                 Button("Refresh Displays") {
                     appState.displayManager.rescan()
                 }
+                Button("Hide Icon") {
+                    confirmHideMenuBarIcon()
+                }
                 Spacer()
                 Button("Quit Shine") {
                     NSApp.terminate(nil)
@@ -53,6 +56,19 @@ struct MenuView: View {
         }
         .padding(14)
         .frame(width: 320)
+    }
+
+    /// Hides the menu bar icon after explaining how to bring it back.
+    private func confirmHideMenuBarIcon() {
+        let alert = NSAlert()
+        alert.messageText = "Hide the menu bar icon?"
+        alert.informativeText = "Shine keeps running and the keyboard keys keep working. To show the icon again, open Shine from Launchpad or Finder."
+        alert.addButton(withTitle: "Hide Icon")
+        alert.addButton(withTitle: "Cancel")
+        NSApp.activate()
+        if alert.runModal() == .alertFirstButtonReturn {
+            appState.menuBarIconVisible = false
+        }
     }
 
     private var permissionBanner: some View {
