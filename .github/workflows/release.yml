@@ -1,0 +1,26 @@
+# Builds the .dmg and attaches it to a GitHub Release whenever a version
+# tag (v1.0, v1.2.3, ...) is pushed.
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build dmg
+        run: ./scripts/make-dmg.sh
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/*.dmg
+          generate_release_notes: true
