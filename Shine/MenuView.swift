@@ -99,39 +99,54 @@ private struct DisplaySection: View {
             HStack {
                 Text(display.name)
                     .font(.headline)
-                Spacer()
                 if !display.respondsToDDC {
                     Text("No DDC reply")
                         .font(.caption2)
                         .foregroundStyle(.orange)
                         .help("The monitor did not answer DDC reads. Controls may still work; enable DDC/CI in the monitor's on-screen menu if they don't.")
                 }
-            }
-
-            HStack(spacing: 8) {
-                Image(systemName: "sun.max.fill")
-                    .foregroundStyle(.secondary)
-                    .frame(width: 16)
-                Slider(value: Binding(
-                    get: { display.brightness },
-                    set: { display.setBrightness($0) }
-                ))
-            }
-
-            HStack(spacing: 8) {
+                Spacer()
                 Button {
-                    display.setMuted(!display.muted)
+                    display.togglePower()
                 } label: {
-                    Image(systemName: display.muted ? "speaker.slash.fill" : "speaker.wave.2.fill")
+                    Image(systemName: "power")
                         .frame(width: 16)
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
-                Slider(value: Binding(
-                    get: { display.muted ? 0 : display.volume },
-                    set: { display.setVolume($0) }
-                ))
+                .foregroundStyle(display.isOn ? Color.secondary : Color.orange)
+                .help(display.isOn
+                      ? "Turn this monitor off (cut the connection)"
+                      : "Turn this monitor back on")
             }
+
+            Group {
+                HStack(spacing: 8) {
+                    Image(systemName: "sun.max.fill")
+                        .foregroundStyle(.secondary)
+                        .frame(width: 16)
+                    Slider(value: Binding(
+                        get: { display.brightness },
+                        set: { display.setBrightness($0) }
+                    ))
+                }
+
+                HStack(spacing: 8) {
+                    Button {
+                        display.setMuted(!display.muted)
+                    } label: {
+                        Image(systemName: display.muted ? "speaker.slash.fill" : "speaker.wave.2.fill")
+                            .frame(width: 16)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+                    Slider(value: Binding(
+                        get: { display.muted ? 0 : display.volume },
+                        set: { display.setVolume($0) }
+                    ))
+                }
+            }
+            .disabled(!display.isOn)
+            .opacity(display.isOn ? 1 : 0.4)
         }
     }
 }

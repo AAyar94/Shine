@@ -27,6 +27,10 @@ final class ExternalDisplay: Identifiable {
     private(set) var volume: Float = 0.25
     private(set) var muted = false
 
+    /// Whether the monitor is powered on. Tracked locally because the Power Mode
+    /// VCP is often not readable; toggled by the power button in the menu.
+    private(set) var isOn = true
+
     /// True if the monitor answered at least one DDC read.
     private(set) var respondsToDDC = false
 
@@ -79,6 +83,17 @@ final class ExternalDisplay: Identifiable {
         muted = mute
         // MCCS: 1 = mute, 2 = unmute
         port.write(VCP.mute, value: mute ? 1 : 2)
+    }
+
+    /// Cuts or restores the monitor's connection by driving DDC Power Mode.
+    /// Off blanks the panel like pressing its power button; on wakes it again.
+    func setPower(on: Bool) {
+        isOn = on
+        port.write(VCP.powerMode, value: on ? VCP.Power.on : VCP.Power.off)
+    }
+
+    func togglePower() {
+        setPower(on: !isOn)
     }
 
     /// One key-press step is 1/16 of the range, like the macOS volume keys.

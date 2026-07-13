@@ -17,6 +17,16 @@ enum VCP {
     static let contrast: UInt8 = 0x12
     static let volume: UInt8 = 0x62
     static let mute: UInt8 = 0x8D
+    static let powerMode: UInt8 = 0xD6
+
+    /// Power Mode (VCP D6) values from the VESA MCCS spec.
+    enum Power {
+        static let on: UInt16 = 0x01
+        /// "Off" — the panel powers down but the DDC channel stays reachable,
+        /// so we can turn it back on. (0x05 is a harder off that some monitors
+        /// won't wake from over DDC.)
+        static let off: UInt16 = 0x04
+    }
 }
 
 // MARK: - Private IOAVService function types
