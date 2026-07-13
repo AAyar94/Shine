@@ -165,19 +165,21 @@ final class DisplayManager {
         return displays.first { $0.displayID == id }
     }
 
-    /// Displays targeted by the volume keys: the monitor acting as the
-    /// current audio output when we can identify it by name; otherwise all
-    /// of them, so the audible one always changes.
+    /// Displays targeted by the volume keys. When we can identify the current
+    /// audio output device by name, we return the monitor(s) it matches — which
+    /// is empty when the output is not one of our monitors (e.g. the Mac's own
+    /// speakers), so the keys fall through to the system and change the device
+    /// that is actually playing sound. Only when the output device is unknown
+    /// do we fall back to all displays so the audible one still changes.
     var volumeKeyTargets: [ExternalDisplay] {
-        if let audioName = AudioOutput.defaultOutputDeviceName() {
-            let matches = displays.filter {
-                $0.name.caseInsensitiveCompare(audioName) == .orderedSame
-                    || audioName.localizedCaseInsensitiveContains($0.name)
-                    || $0.name.localizedCaseInsensitiveContains(audioName)
-            }
-            if !matches.isEmpty { return matches }
+        guard let audioName = AudioOutput.defaultOutputDeviceName() else {
+            return displays
         }
-        return displays
+        return displays.filter {
+            $0.name.caseInsensitiveCompare(audioName) == .orderedSame
+                || audioName.localizedCaseInsensitiveContains($0.name)
+                || $0.name.localizedCaseInsensitiveContains(audioName)
+        }
     }
 
     private static func name(for displayID: CGDirectDisplayID) -> String {
