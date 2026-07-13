@@ -7,6 +7,8 @@
 
 import SwiftUI
 import Observation
+import ServiceManagement
+import OSLog
 
 @MainActor
 @Observable
@@ -29,6 +31,32 @@ final class AppState {
     var volumeKeysEnabled: Bool = UserDefaults.standard.object(forKey: "volumeKeys") as? Bool ?? true {
         didSet { UserDefaults.standard.set(volumeKeysEnabled, forKey: "volumeKeys") }
     }
+
+    /// Whether macOS launches Shine automatically when the user logs in.
+    /// Backed by the system login-item registration rather than UserDefaults,
+    /// so it stays in sync with what the user does in System Settings > General
+    /// > Login Items.
+    var launchAtLogin: Bool = SMAppService.mainApp.status == .enabled {
+        didSet {
+            guard !isSyncingLaunchAtLogin, oldValue != launchAtLogin else { return }
+            do {
+                if launchAtLogin {
+                    try SMAppService.mainApp.register()
+                } else {
+                    try SMAppService.mainApp.unregister()
+                }
+            } catch {
+                Logger(subsystem: "Shine", category: "LaunchAtLogin")
+                    .error("Failed to \(self.launchAtLogin ? "enable" : "disable") launch at login: \(error.localizedDescription)")
+                // Roll the toggle back so the UI reflects the real state,
+                // without re-entering the registration path.
+                isSyncingLaunchAtLogin = true
+                launchAtLogin = oldValue
+                isSyncingLaunchAtLogin = false
+            }
+        }
+    }
+    @ObservationIgnored private var isSyncingLaunchAtLogin = false
 
     @ObservationIgnored private var permissionPoller: Timer?
 

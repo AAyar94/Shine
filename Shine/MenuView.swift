@@ -37,6 +37,8 @@ struct MenuView: View {
                 .toggleStyle(.checkbox)
             Toggle("Volume keys control monitor speakers", isOn: $appState.volumeKeysEnabled)
                 .toggleStyle(.checkbox)
+            Toggle("Launch Shine at login", isOn: $appState.launchAtLogin)
+                .toggleStyle(.checkbox)
 
             Divider()
 
