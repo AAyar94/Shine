@@ -1,0 +1,196 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Accessibility permission needed" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erişilebilirlik izni gerekiyor"
+          }
+        }
+      }
+    },
+    "Brightness keys control monitor under pointer" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parlaklık tuşları imlecin üzerindeki monitörü denetler"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İptal"
+          }
+        }
+      }
+    },
+    "DDC is not available on this Mac." : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu Mac'te DDC kullanılamıyor."
+          }
+        }
+      }
+    },
+    "External Display" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Harici Ekran"
+          }
+        }
+      }
+    },
+    "Hide Icon" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simgeyi Gizle"
+          }
+        }
+      }
+    },
+    "Hide the menu bar icon?" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menü çubuğu simgesi gizlensin mi?"
+          }
+        }
+      }
+    },
+    "Launch Shine at login" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Açılışta Shine'ı başlat"
+          }
+        }
+      }
+    },
+    "No DDC reply" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DDC yanıtı yok"
+          }
+        }
+      }
+    },
+    "No external display detected." : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Harici ekran algılanmadı."
+          }
+        }
+      }
+    },
+    "Open System Settings…" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistem Ayarları'nı Aç…"
+          }
+        }
+      }
+    },
+    "Quit Shine" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shine'dan Çık"
+          }
+        }
+      }
+    },
+    "Refresh Displays" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ekranları Yenile"
+          }
+        }
+      }
+    },
+    "Shine keeps running and the keyboard keys keep working. To show the icon again, open Shine from Launchpad or Finder." : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shine çalışmaya ve klavye tuşları işlev görmeye devam eder. Simgeyi yeniden göstermek için Shine'ı Launchpad veya Finder'dan açın."
+          }
+        }
+      }
+    },
+    "Shine needs Accessibility access to capture the keyboard brightness and volume keys." : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shine, klavyedeki parlaklık ve ses tuşlarını yakalamak için Erişilebilirlik erişimine ihtiyaç duyar."
+          }
+        }
+      }
+    },
+    "The monitor did not answer DDC reads. Controls may still work; enable DDC/CI in the monitor's on-screen menu if they don't." : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monitör DDC okumalarına yanıt vermedi. Denetimler yine de çalışabilir; çalışmazsa monitörün ekran menüsünden DDC/CI'yı etkinleştirin."
+          }
+        }
+      }
+    },
+    "Turn this monitor back on" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu monitörü yeniden aç"
+          }
+        }
+      }
+    },
+    "Turn this monitor off (cut the connection)" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu monitörü kapat (bağlantıyı kes)"
+          }
+        }
+      }
+    },
+    "Volume keys control monitor speakers" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ses tuşları monitör hoparlörlerini denetler"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

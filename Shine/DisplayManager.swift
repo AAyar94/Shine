@@ -200,6 +200,6 @@ final class DisplayManager {
     private static func name(for displayID: CGDirectDisplayID) -> String {
         NSScreen.screens.first {
             ($0.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID) == displayID
-        }?.localizedName ?? "External Display"
+        }?.localizedName ?? String(localized: "External Display")
     }
 }

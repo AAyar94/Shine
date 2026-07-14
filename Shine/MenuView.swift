@@ -63,10 +63,10 @@ struct MenuView: View {
     /// Hides the menu bar icon after explaining how to bring it back.
     private func confirmHideMenuBarIcon() {
         let alert = NSAlert()
-        alert.messageText = "Hide the menu bar icon?"
-        alert.informativeText = "Shine keeps running and the keyboard keys keep working. To show the icon again, open Shine from Launchpad or Finder."
-        alert.addButton(withTitle: "Hide Icon")
-        alert.addButton(withTitle: "Cancel")
+        alert.messageText = String(localized: "Hide the menu bar icon?")
+        alert.informativeText = String(localized: "Shine keeps running and the keyboard keys keep working. To show the icon again, open Shine from Launchpad or Finder.")
+        alert.addButton(withTitle: String(localized: "Hide Icon"))
+        alert.addButton(withTitle: String(localized: "Cancel"))
         NSApp.activate()
         if alert.runModal() == .alertFirstButtonReturn {
             appState.menuBarIconVisible = false
@@ -115,8 +115,8 @@ private struct DisplaySection: View {
                 .buttonStyle(.plain)
                 .foregroundStyle(display.isOn ? Color.secondary : Color.orange)
                 .help(display.isOn
-                      ? "Turn this monitor off (cut the connection)"
-                      : "Turn this monitor back on")
+                      ? LocalizedStringKey("Turn this monitor off (cut the connection)")
+                      : LocalizedStringKey("Turn this monitor back on"))
             }
 
             Group {
