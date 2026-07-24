@@ -80,21 +80,35 @@ final class AppState {
         accessibilityGranted = KeyboardManager.isAccessibilityTrusted(promptIfNeeded: true)
         if accessibilityGranted {
             keyboard.start()
-        } else {
-            permissionPoller = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { _ in
-                Task { @MainActor in
-                    let state = AppState.shared
-                    if KeyboardManager.isAccessibilityTrusted(promptIfNeeded: false) {
-                        state.accessibilityGranted = true
-                        state.keyboard.start()
-                        state.permissionPoller?.invalidate()
-                        state.permissionPoller = nil
-                    }
+        }
+
+        // The tap may fail to create even when AXIsProcessTrusted returns true
+        // (stale entry after an app update). Keep polling until the tap is live.
+        startPermissionPoller()
+
+        Task { await checkForUpdates() }
+    }
+
+    /// Polls until the event tap is successfully running.
+    private func startPermissionPoller() {
+        permissionPoller?.invalidate()
+        permissionPoller = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { _ in
+            Task { @MainActor in
+                let state = AppState.shared
+                if state.keyboard.isRunning {
+                    state.accessibilityGranted = true
+                    state.permissionPoller?.invalidate()
+                    state.permissionPoller = nil
+                    return
+                }
+                // Either not trusted yet, or stale — re-check.
+                let trusted = KeyboardManager.isAccessibilityTrusted(promptIfNeeded: false)
+                state.accessibilityGranted = trusted
+                if trusted {
+                    state.keyboard.start()
                 }
             }
         }
-
-        Task { await checkForUpdates() }
     }
 
     private func checkForUpdates() async {

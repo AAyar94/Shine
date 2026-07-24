@@ -135,6 +135,9 @@ struct MenuView: View {
             Text("Shine needs Accessibility access to capture the keyboard brightness and volume keys.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+            Text("After an update, remove Shine from the list and re-add it.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
             Button("Open System Settings…") {
                 KeyboardManager.openAccessibilitySettings()
             }
