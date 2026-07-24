@@ -15,6 +15,10 @@ struct MenuView: View {
         @Bindable var appState = appState
 
         VStack(alignment: .leading, spacing: 14) {
+            if appState.updateAvailable {
+                updateBanner
+            }
+
             if !appState.accessibilityGranted {
                 permissionBanner
             }
@@ -97,6 +101,31 @@ struct MenuView: View {
                 .help("Unlink brightness — control each display individually")
             }
         }
+    }
+
+    private var updateBanner: some View {
+        @Bindable var appState = appState
+        return VStack(alignment: .leading, spacing: 6) {
+            Label("Shine \(appState.availableVersion ?? "") is available", systemImage: "arrow.down.circle.fill")
+                .font(.headline)
+            Text("A new version can be downloaded from GitHub.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            HStack(spacing: 8) {
+                Button("Download") {
+                    if let url = appState.updateURL { NSWorkspace.shared.open(url) }
+                }
+                .controlSize(.small)
+                Button("Dismiss") {
+                    appState.availableVersion = nil
+                    appState.updateURL = nil
+                }
+                .controlSize(.small)
+            }
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 8).fill(.blue.opacity(0.12)))
     }
 
     private var permissionBanner: some View {

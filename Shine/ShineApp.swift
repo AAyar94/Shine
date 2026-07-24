@@ -63,6 +63,11 @@ final class AppState {
 
     @ObservationIgnored private var permissionPoller: Timer?
 
+    /// Set when a newer release is found on GitHub.
+    var availableVersion: String?
+    var updateURL: URL?
+    var updateAvailable: Bool { availableVersion != nil }
+
     private init() {}
 
     func start() {
@@ -87,6 +92,15 @@ final class AppState {
                     }
                 }
             }
+        }
+
+        Task { await checkForUpdates() }
+    }
+
+    private func checkForUpdates() async {
+        if let result = await UpdateChecker.check() {
+            availableVersion = result.latestVersion
+            updateURL = result.releaseURL
         }
     }
 }
