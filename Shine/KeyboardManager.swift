@@ -116,13 +116,22 @@ extension AppState {
 
         switch key {
         case .brightnessUp, .brightnessDown:
-            guard brightnessKeysEnabled,
-                  let target = displayManager.display(under: currentMouseLocation()) else { return false }
-            if isPressed {
-                target.stepBrightness(up: key == .brightnessUp)
-                OSD.shared.show(.brightness, level: target.brightness, on: target.screen)
+            guard brightnessKeysEnabled else { return false }
+            if brightnessLinked {
+                let onDisplays = displayManager.displays.filter { $0.isOn }
+                guard let lead = onDisplays.first else { return false }
+                if isPressed {
+                    displayManager.stepBrightnessAll(up: key == .brightnessUp)
+                    OSD.shared.show(.brightness, level: lead.brightness, on: lead.screen)
+                }
+            } else {
+                guard let target = displayManager.display(under: currentMouseLocation()) else { return false }
+                if isPressed {
+                    target.stepBrightness(up: key == .brightnessUp)
+                    OSD.shared.show(.brightness, level: target.brightness, on: target.screen)
+                }
             }
-            return true // swallow key-up too so the system never sees the key
+            return true
 
         case .soundUp, .soundDown:
             let targets = displayManager.volumeKeyTargets

@@ -136,6 +136,13 @@ final class DisplayManager {
         }
     }
 
+    /// Steps brightness on all displays that are on (used for linked keyboard keys).
+    func stepBrightnessAll(up: Bool) {
+        for display in displays where display.isOn {
+            display.stepBrightness(up: up)
+        }
+    }
+
     /// Average brightness across all displays that are on (used for linked slider).
     var averageBrightness: Float {
         let onDisplays = displays.filter { $0.isOn }
