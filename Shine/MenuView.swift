@@ -131,6 +131,16 @@ private struct DisplaySection: View {
                 }
 
                 HStack(spacing: 8) {
+                    Image(systemName: "circle.lefthalf.filled")
+                        .foregroundStyle(.secondary)
+                        .frame(width: 16)
+                    Slider(value: Binding(
+                        get: { display.contrast },
+                        set: { display.setContrast($0) }
+                    ))
+                }
+
+                HStack(spacing: 8) {
                     Button {
                         display.setMuted(!display.muted)
                     } label: {

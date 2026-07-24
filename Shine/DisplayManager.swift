@@ -20,10 +20,12 @@ final class ExternalDisplay: Identifiable {
     private let port: DDCPort
 
     private(set) var maxBrightness: UInt16 = 100
+    private(set) var maxContrast: UInt16 = 100
     private(set) var maxVolume: UInt16 = 100
 
     /// Normalized 0...1 values mirrored from / written to the monitor.
     private(set) var brightness: Float = 0.75
+    private(set) var contrast: Float = 0.5
     private(set) var volume: Float = 0.25
     private(set) var muted = false
 
@@ -56,6 +58,11 @@ final class ExternalDisplay: Identifiable {
             brightness = Float(value.current) / Float(value.max)
             respondsToDDC = true
         }
+        if let value = port.read(VCP.contrast) {
+            maxContrast = value.max
+            contrast = Float(value.current) / Float(value.max)
+            respondsToDDC = true
+        }
         if let value = port.read(VCP.volume) {
             maxVolume = value.max
             volume = Float(value.current) / Float(value.max)
@@ -70,6 +77,12 @@ final class ExternalDisplay: Identifiable {
         let clamped = min(max(normalized, 0), 1)
         brightness = clamped
         port.write(VCP.brightness, value: UInt16((Float(maxBrightness) * clamped).rounded()))
+    }
+
+    func setContrast(_ normalized: Float) {
+        let clamped = min(max(normalized, 0), 1)
+        contrast = clamped
+        port.write(VCP.contrast, value: UInt16((Float(maxContrast) * clamped).rounded()))
     }
 
     func setVolume(_ normalized: Float) {
