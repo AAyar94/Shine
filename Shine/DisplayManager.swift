@@ -129,6 +129,20 @@ final class DisplayManager {
     /// False on machines where the private IOAVService API is unavailable.
     var ddcSupported: Bool { DDCPort.isSupported }
 
+    /// Sets brightness on all displays that are on (used for linked mode).
+    func setBrightnessAll(_ normalized: Float) {
+        for display in displays where display.isOn {
+            display.setBrightness(normalized)
+        }
+    }
+
+    /// Average brightness across all displays that are on (used for linked slider).
+    var averageBrightness: Float {
+        let onDisplays = displays.filter { $0.isOn }
+        guard !onDisplays.isEmpty else { return 0 }
+        return onDisplays.reduce(0) { $0 + $1.brightness } / Float(onDisplays.count)
+    }
+
     init() {
         rescan()
         CGDisplayRegisterReconfigurationCallback({ _, flags, _ in

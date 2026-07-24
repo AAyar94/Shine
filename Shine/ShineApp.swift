@@ -31,6 +31,9 @@ final class AppState {
     var volumeKeysEnabled: Bool = UserDefaults.standard.object(forKey: "volumeKeys") as? Bool ?? true {
         didSet { UserDefaults.standard.set(volumeKeysEnabled, forKey: "volumeKeys") }
     }
+    var brightnessLinked: Bool = UserDefaults.standard.object(forKey: "brightnessLinked") as? Bool ?? true {
+        didSet { UserDefaults.standard.set(brightnessLinked, forKey: "brightnessLinked") }
+    }
 
     /// Whether macOS launches Shine automatically when the user logs in.
     /// Backed by the system login-item registration rather than UserDefaults,

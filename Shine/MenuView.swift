@@ -26,8 +26,11 @@ struct MenuView: View {
                 Label("No external display detected.", systemImage: "display.trianglebadge.exclamationmark")
                     .foregroundStyle(.secondary)
             } else {
+                if appState.brightnessLinked && appState.displayManager.displays.count > 1 {
+                    linkedBrightnessSlider
+                }
                 ForEach(appState.displayManager.displays) { display in
-                    DisplaySection(display: display)
+                    DisplaySection(display: display, showBrightness: !appState.brightnessLinked || appState.displayManager.displays.count <= 1)
                 }
             }
 
@@ -73,6 +76,29 @@ struct MenuView: View {
         }
     }
 
+    private var linkedBrightnessSlider: some View {
+        @Bindable var appState = appState
+        return VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 8) {
+                Image(systemName: "sun.max.fill")
+                    .foregroundStyle(.secondary)
+                    .frame(width: 16)
+                Slider(value: Binding(
+                    get: { appState.displayManager.averageBrightness },
+                    set: { appState.displayManager.setBrightnessAll($0) }
+                ))
+                Button {
+                    appState.brightnessLinked = false
+                } label: {
+                    Image(systemName: "link")
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .help("Unlink brightness — control each display individually")
+            }
+        }
+    }
+
     private var permissionBanner: some View {
         VStack(alignment: .leading, spacing: 6) {
             Label("Accessibility permission needed", systemImage: "hand.raised.fill")
@@ -93,6 +119,8 @@ struct MenuView: View {
 
 private struct DisplaySection: View {
     let display: ExternalDisplay
+    var showBrightness: Bool = true
+    @Environment(AppState.self) private var appState
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -120,14 +148,26 @@ private struct DisplaySection: View {
             }
 
             Group {
-                HStack(spacing: 8) {
-                    Image(systemName: "sun.max.fill")
-                        .foregroundStyle(.secondary)
-                        .frame(width: 16)
-                    Slider(value: Binding(
-                        get: { display.brightness },
-                        set: { display.setBrightness($0) }
-                    ))
+                if showBrightness {
+                    HStack(spacing: 8) {
+                        Image(systemName: "sun.max.fill")
+                            .foregroundStyle(.secondary)
+                            .frame(width: 16)
+                        Slider(value: Binding(
+                            get: { display.brightness },
+                            set: { display.setBrightness($0) }
+                        ))
+                        if appState.displayManager.displays.count > 1 {
+                            Button {
+                                appState.brightnessLinked = true
+                            } label: {
+                                Image(systemName: "link")
+                                    .foregroundStyle(.secondary)
+                            }
+                            .buttonStyle(.plain)
+                            .help("Link brightness — control all displays with one slider")
+                        }
+                    }
                 }
 
                 HStack(spacing: 8) {
