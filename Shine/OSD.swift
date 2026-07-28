@@ -9,6 +9,12 @@
 import AppKit
 import SwiftUI
 
+/// Private OSD.framework interface for driving the real macOS system HUD.
+@objc private protocol OSDManagerProtocol {
+    func showImage(_ image: Int, onDisplayID: CGDirectDisplayID, priority: UInt32,
+                   msecUntilFade: UInt32, filledChiclets: UInt32, totalChiclets: UInt32, locked: Bool)
+}
+
 @MainActor
 final class OSD {
     static let shared = OSD()
@@ -23,14 +29,36 @@ final class OSD {
             case .volume: "speaker.wave.3.fill"
             }
         }
+
+        /// Image constants from the private OSD framework (kOSDGraphic…).
+        func systemImage(muted: Bool) -> Int {
+            switch self {
+            case .brightness: 1            // kOSDGraphicBacklight
+            case .volume: muted ? 4 : 3    // kOSDGraphicAudioSpeaker(Muted)
+            }
+        }
     }
 
     private var panel: NSPanel?
     private var hideTask: Task<Void, Never>?
 
+    /// The shared OSDManager, resolved once. Nil if the private framework is
+    /// unavailable — callers then fall back to Shine's own overlay.
+    private static let systemManager: OSDManagerProtocol? = {
+        _ = dlopen("/System/Library/PrivateFrameworks/OSD.framework/Versions/A/OSD", RTLD_LAZY)
+        guard let cls = NSClassFromString("OSDManager"),
+              let shared = (cls as AnyObject).perform(NSSelectorFromString("sharedManager"))?
+                  .takeUnretainedValue()
+        else { return nil }
+        return unsafeBitCast(shared, to: OSDManagerProtocol.self)
+    }()
+
     private init() {}
 
     func show(_ kind: Kind, level: Float, on screen: NSScreen?) {
+        if AppState.shared.useSystemOSD, showSystem(kind, level: level, on: screen) {
+            return
+        }
         guard let screen = screen ?? NSScreen.main else { return }
 
         let content = OSDContent(kind: kind, level: level)
@@ -53,6 +81,27 @@ final class OSD {
             guard !Task.isCancelled else { return }
             self?.fadeOut()
         }
+    }
+
+    /// Drives the real macOS HUD via OSDManager. Returns false (so the caller
+    /// can fall back) when the private framework isn't available.
+    private func showSystem(_ kind: Kind, level: Float, on screen: NSScreen?) -> Bool {
+        guard let manager = Self.systemManager else { return false }
+        let target = screen ?? NSScreen.main
+        let displayID = target.flatMap {
+            $0.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID
+        } ?? CGMainDisplayID()
+
+        let clamped = min(max(level, 0), 1)
+        let muted = kind == .volume && clamped == 0
+        manager.showImage(kind.systemImage(muted: muted),
+                          onDisplayID: displayID,
+                          priority: 0x1F4,
+                          msecUntilFade: 1500,
+                          filledChiclets: UInt32((clamped * 16).rounded()),
+                          totalChiclets: 16,
+                          locked: false)
+        return true
     }
 
     private func makePanel() -> NSPanel {

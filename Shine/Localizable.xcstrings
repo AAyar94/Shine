@@ -221,6 +221,16 @@
         }
       }
     },
+    "Show the built-in macOS brightness/volume HUD instead of Shine's own overlay": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shine'ın kendi katmanı yerine macOS'un yerleşik parlaklık/ses HUD'unu göster"
+          }
+        }
+      }
+    },
     "Snap sliders to 25% / 50% / 75% / 100%": {
       "localizations": {
         "tr": {
@@ -277,6 +287,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Parlaklık bağını çöz — her ekranı ayrı ayrı denetle"
+          }
+        }
+      }
+    },
+    "Use the macOS system HUD": {
+      "localizations": {
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS sistem HUD'unu kullan"
           }
         }
       }

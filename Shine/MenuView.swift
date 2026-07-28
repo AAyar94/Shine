@@ -48,6 +48,9 @@ struct MenuView: View {
                 .toggleStyle(.checkbox)
             Toggle("Snap sliders to 25% / 50% / 75% / 100%", isOn: $appState.snapToQuarters)
                 .toggleStyle(.checkbox)
+            Toggle("Use the macOS system HUD", isOn: $appState.useSystemOSD)
+                .toggleStyle(.checkbox)
+                .help("Show the built-in macOS brightness/volume HUD instead of Shine's own overlay")
             Toggle("Launch Shine at login", isOn: $appState.launchAtLogin)
                 .toggleStyle(.checkbox)
 
