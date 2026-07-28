@@ -44,6 +44,10 @@ struct MenuView: View {
                 .toggleStyle(.checkbox)
             Toggle("Volume keys control monitor speakers", isOn: $appState.volumeKeysEnabled)
                 .toggleStyle(.checkbox)
+            Toggle("Show percentage next to sliders", isOn: $appState.showSliderPercentages)
+                .toggleStyle(.checkbox)
+            Toggle("Snap sliders to 25% / 50% / 75% / 100%", isOn: $appState.snapToQuarters)
+                .toggleStyle(.checkbox)
             Toggle("Launch Shine at login", isOn: $appState.launchAtLogin)
                 .toggleStyle(.checkbox)
 
@@ -89,8 +93,11 @@ struct MenuView: View {
                     .frame(width: 16)
                 Slider(value: Binding(
                     get: { appState.displayManager.averageBrightness },
-                    set: { appState.displayManager.setBrightnessAll($0) }
+                    set: { appState.displayManager.setBrightnessAll(appState.snapped($0)) }
                 ))
+                if appState.showSliderPercentages {
+                    PercentLabel(value: appState.displayManager.averageBrightness)
+                }
                 Button {
                     appState.brightnessLinked = false
                 } label: {
@@ -187,8 +194,11 @@ private struct DisplaySection: View {
                             .frame(width: 16)
                         Slider(value: Binding(
                             get: { display.brightness },
-                            set: { display.setBrightness($0) }
+                            set: { display.setBrightness(appState.snapped($0)) }
                         ))
+                        if appState.showSliderPercentages {
+                            PercentLabel(value: display.brightness)
+                        }
                         if appState.displayManager.displays.count > 1 {
                             Button {
                                 appState.brightnessLinked = true
@@ -208,8 +218,11 @@ private struct DisplaySection: View {
                         .frame(width: 16)
                     Slider(value: Binding(
                         get: { display.contrast },
-                        set: { display.setContrast($0) }
+                        set: { display.setContrast(appState.snapped($0)) }
                     ))
+                    if appState.showSliderPercentages {
+                        PercentLabel(value: display.contrast)
+                    }
                 }
 
                 HStack(spacing: 8) {
@@ -223,12 +236,27 @@ private struct DisplaySection: View {
                     .foregroundStyle(.secondary)
                     Slider(value: Binding(
                         get: { display.muted ? 0 : display.volume },
-                        set: { display.setVolume($0) }
+                        set: { display.setVolume(appState.snapped($0)) }
                     ))
+                    if appState.showSliderPercentages {
+                        PercentLabel(value: display.muted ? 0 : display.volume)
+                    }
                 }
             }
             .disabled(!display.isOn)
             .opacity(display.isOn ? 1 : 0.4)
         }
+    }
+}
+
+/// A fixed-width, right-aligned percentage label shown beside a slider.
+private struct PercentLabel: View {
+    let value: Float
+
+    var body: some View {
+        Text("\(Int((value * 100).rounded()))%")
+            .font(.caption.monospacedDigit())
+            .foregroundStyle(.secondary)
+            .frame(width: 36, alignment: .trailing)
     }
 }

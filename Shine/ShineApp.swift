@@ -35,6 +35,27 @@ final class AppState {
         didSet { UserDefaults.standard.set(brightnessLinked, forKey: "brightnessLinked") }
     }
 
+    /// Shows a percentage label next to each slider.
+    var showSliderPercentages: Bool = UserDefaults.standard.object(forKey: "showSliderPercentages") as? Bool ?? false {
+        didSet { UserDefaults.standard.set(showSliderPercentages, forKey: "showSliderPercentages") }
+    }
+
+    /// Magnetically snaps slider values to the nearest quarter mark
+    /// (25%, 50%, 75%, 100%, and 0%) when the value lands close to it.
+    var snapToQuarters: Bool = UserDefaults.standard.object(forKey: "snapToQuarters") as? Bool ?? false {
+        didSet { UserDefaults.standard.set(snapToQuarters, forKey: "snapToQuarters") }
+    }
+
+    /// Applies quarter-mark snapping when `snapToQuarters` is enabled, otherwise
+    /// returns the value unchanged. Used to wrap slider set closures.
+    func snapped(_ value: Float) -> Float {
+        guard snapToQuarters else { return value }
+        let marks: [Float] = [0, 0.25, 0.5, 0.75, 1.0]
+        let threshold: Float = 0.05
+        for mark in marks where abs(value - mark) <= threshold { return mark }
+        return value
+    }
+
     /// Whether macOS launches Shine automatically when the user logs in.
     /// Backed by the system login-item registration rather than UserDefaults,
     /// so it stays in sync with what the user does in System Settings > General
