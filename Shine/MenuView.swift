@@ -173,6 +173,28 @@ private struct DisplaySection: View {
                         .help("The monitor did not answer DDC reads. Controls may still work; enable DDC/CI in the monitor's on-screen menu if they don't.")
                 }
                 Spacer()
+                Menu {
+                    ForEach(VCP.Input.all, id: \.value) { input in
+                        Button {
+                            display.setInput(input.value)
+                        } label: {
+                            if display.currentInput == input.value {
+                                Label(input.name, systemImage: "checkmark")
+                            } else {
+                                Text(input.name)
+                            }
+                        }
+                    }
+                } label: {
+                    Image(systemName: "rectangle.2.swap")
+                        .frame(width: 16)
+                }
+                .menuStyle(.borderlessButton)
+                .menuIndicator(.hidden)
+                .fixedSize()
+                .foregroundStyle(.secondary)
+                .help("Switch the monitor's input source (e.g. hand it to a console)")
+
                 Button {
                     display.togglePower()
                 } label: {

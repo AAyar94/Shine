@@ -18,6 +18,7 @@ enum VCP {
     static let volume: UInt8 = 0x62
     static let mute: UInt8 = 0x8D
     static let powerMode: UInt8 = 0xD6
+    static let inputSource: UInt8 = 0x60
 
     /// Power Mode (VCP D6) values from the VESA MCCS spec.
     enum Power {
@@ -26,6 +27,25 @@ enum VCP {
         /// so we can turn it back on. (0x05 is a harder off that some monitors
         /// won't wake from over DDC.)
         static let off: UInt16 = 0x04
+    }
+
+    /// Input Source (VCP 60) values from the VESA MCCS spec. Switching input is
+    /// how we hand the monitor to another device (e.g. a console) without cutting
+    /// the Mac's connection: DDC still works over the Mac's cable, so we can read
+    /// the current input and switch back later. USB-C is not part of the standard
+    /// and varies by vendor; 0x1B is the most common report.
+    enum Input {
+        static let all: [(value: UInt16, name: String)] = [
+            (0x11, "HDMI 1"),
+            (0x12, "HDMI 2"),
+            (0x0F, "DisplayPort 1"),
+            (0x10, "DisplayPort 2"),
+            (0x1B, "USB-C"),
+        ]
+
+        static func name(for value: UInt16) -> String? {
+            all.first { $0.value == value }?.name
+        }
     }
 }
 

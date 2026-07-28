@@ -36,6 +36,11 @@ final class ExternalDisplay: Identifiable {
     /// True if the monitor answered at least one DDC read.
     private(set) var respondsToDDC = false
 
+    /// The monitor's active input source (VCP 60), when readable — the input the
+    /// Mac is showing on. Used to mark the current input and to switch away to
+    /// another (e.g. a game console) and back.
+    private(set) var currentInput: UInt16?
+
     var id: CGDirectDisplayID { displayID }
 
     init(displayID: CGDirectDisplayID, name: String, port: DDCPort) {
@@ -71,6 +76,18 @@ final class ExternalDisplay: Identifiable {
         if let value = port.read(VCP.mute) {
             muted = value.current == 1
         }
+        if let value = port.read(VCP.inputSource) {
+            currentInput = value.current
+            respondsToDDC = true
+        }
+    }
+
+    /// Switches the monitor's active input source (VCP 60). Handing the monitor
+    /// to another device this way keeps the Mac's DDC channel alive, so we can
+    /// switch it back later without unplugging anything.
+    func setInput(_ value: UInt16) {
+        currentInput = value
+        port.write(VCP.inputSource, value: value)
     }
 
     func setBrightness(_ normalized: Float) {
