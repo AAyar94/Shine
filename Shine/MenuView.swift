@@ -254,9 +254,11 @@ private struct PercentLabel: View {
     let value: Float
 
     var body: some View {
-        Text("\(Int((value * 100).rounded()))%")
+        // `.percent` expects a fraction and places the % sign per the
+        // current locale (e.g. "50%" in English, "%50" in Turkish).
+        Text(Double(value).formatted(.percent.precision(.fractionLength(0))))
             .font(.caption.monospacedDigit())
             .foregroundStyle(.secondary)
-            .frame(width: 36, alignment: .trailing)
+            .frame(width: 40, alignment: .trailing)
     }
 }
