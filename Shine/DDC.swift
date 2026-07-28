@@ -192,4 +192,54 @@ final class DDCPort {
         }
         return nil
     }
+
+    /// Reads the monitor's DDC/CI capabilities string (VCP F3), reassembled from
+    /// its fragments. Returns nil if the monitor doesn't answer. We use it to
+    /// learn which input sources (VCP 60) a monitor actually has, so we only
+    /// offer real inputs. Slow (several I2C round-trips) — read once and cache.
+    func readCapabilities() -> String? {
+        guard let writeI2C = Self.writeI2C, let readI2C = Self.readI2C else { return nil }
+        var assembled = [UInt8]()
+        var offset: UInt16 = 0
+
+        // Request fragments until the monitor returns an empty one. The cap keeps
+        // a misbehaving monitor from looping forever.
+        for _ in 0..<40 {
+            var request: [UInt8] = [0x83, 0xF3, UInt8(offset >> 8), UInt8(offset & 0xFF), 0]
+            request[4] = 0x6E ^ UInt8(Self.ddcDataAddress)
+                ^ request[0] ^ request[1] ^ request[2] ^ request[3]
+
+            let wrote = request.withUnsafeMutableBufferPointer {
+                writeI2C(avService, Self.i2cAddress, Self.ddcDataAddress,
+                         $0.baseAddress, UInt32($0.count))
+            }
+            guard wrote == KERN_SUCCESS else { break }
+            usleep(40_000)
+
+            var reply = [UInt8](repeating: 0, count: 64)
+            let readResult = reply.withUnsafeMutableBufferPointer {
+                readI2C(avService, Self.i2cAddress, Self.ddcDataAddress,
+                        $0.baseAddress, UInt32($0.count))
+            }
+            // Reply: [addr, len, 0xE3, offHi, offLo, <fragment…>, checksum]
+            guard readResult == KERN_SUCCESS, reply[2] == 0xE3,
+                  (UInt16(reply[3]) << 8 | UInt16(reply[4])) == offset else { break }
+
+            let fragmentLen = Int(reply[1] & 0x7F) - 3  // minus opcode + 2 offset bytes
+            guard fragmentLen > 0, 5 + fragmentLen <= reply.count else { break }
+            assembled.append(contentsOf: reply[5..<(5 + fragmentLen)])
+            offset += UInt16(fragmentLen)
+        }
+        return assembled.isEmpty ? nil : String(bytes: assembled, encoding: .ascii)
+    }
+
+    /// Extracts the input-source values a monitor lists for VCP 60 from its
+    /// capabilities string, e.g. the "11 12 0F" in "…60(11 12 0F)…".
+    static func inputSourceValues(from capabilities: String) -> [UInt16] {
+        guard let open = capabilities.range(of: "60("),
+              let close = capabilities[open.upperBound...].firstIndex(of: ")") else { return [] }
+        return capabilities[open.upperBound..<close]
+            .split(separator: " ")
+            .compactMap { UInt16($0, radix: 16) }
+    }
 }

@@ -161,6 +161,17 @@ private struct DisplaySection: View {
     var showBrightness: Bool = true
     @Environment(AppState.self) private var appState
 
+    /// Inputs to show in the switch menu: the monitor's own inputs when it
+    /// reported them, otherwise the common set (minus the rare DisplayPort 2).
+    private var inputOptions: [(value: UInt16, name: String)] {
+        guard !display.supportedInputs.isEmpty else {
+            return VCP.Input.all.filter { $0.value != 0x10 }
+        }
+        return display.supportedInputs.map { value in
+            (value, VCP.Input.name(for: value) ?? String(format: "Input 0x%02X", value))
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -174,7 +185,7 @@ private struct DisplaySection: View {
                 }
                 Spacer()
                 Menu {
-                    ForEach(VCP.Input.all, id: \.value) { input in
+                    ForEach(inputOptions, id: \.value) { input in
                         Button {
                             display.setInput(input.value)
                         } label: {

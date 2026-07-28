@@ -41,12 +41,18 @@ final class ExternalDisplay: Identifiable {
     /// another (e.g. a game console) and back.
     private(set) var currentInput: UInt16?
 
+    /// Input-source values (VCP 60) this monitor actually exposes, read from its
+    /// DDC capabilities string. Empty when the monitor didn't report them — the
+    /// menu then falls back to the common inputs.
+    let supportedInputs: [UInt16]
+
     var id: CGDirectDisplayID { displayID }
 
-    init(displayID: CGDirectDisplayID, name: String, port: DDCPort) {
+    init(displayID: CGDirectDisplayID, name: String, port: DDCPort, supportedInputs: [UInt16]) {
         self.displayID = displayID
         self.name = name
         self.port = port
+        self.supportedInputs = supportedInputs
         refreshFromMonitor()
     }
 
@@ -143,6 +149,10 @@ final class ExternalDisplay: Identifiable {
 final class DisplayManager {
     private(set) var displays: [ExternalDisplay] = []
 
+    /// Supported input sources per physical monitor (keyed by EDID), cached so the
+    /// slow capabilities read happens once per monitor rather than on every rescan.
+    private var inputCache: [String: [UInt16]] = [:]
+
     /// False on machines where the private IOAVService API is unavailable.
     var ddcSupported: Bool { DDCPort.isSupported }
 
@@ -218,8 +228,20 @@ final class DisplayManager {
         }
 
         displays = matched.map { id, port in
-            ExternalDisplay(displayID: id, name: Self.name(for: id), port: port)
+            ExternalDisplay(displayID: id, name: Self.name(for: id), port: port,
+                            supportedInputs: supportedInputs(for: port))
         }
+    }
+
+    /// Returns the monitor's supported input sources, reading its DDC capabilities
+    /// the first time and caching the result by EDID for subsequent rescans.
+    private func supportedInputs(for port: DDCPort) -> [UInt16] {
+        guard let edid = port.identity else { return [] }
+        let key = "\(edid.vendorID)-\(edid.productID)-\(edid.serial)"
+        if let cached = inputCache[key] { return cached }
+        let inputs = port.readCapabilities().map(DDCPort.inputSourceValues(from:)) ?? []
+        inputCache[key] = inputs
+        return inputs
     }
 
     /// The display currently under the mouse pointer (CG global coordinates).
