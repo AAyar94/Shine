@@ -2,18 +2,17 @@
 //  OSD.swift
 //  Shine
 //
-//  A lightweight system-style HUD shown on the target display when the
-//  brightness / volume keys adjust an external monitor.
+//  A system-style HUD shown on the target display when the brightness / volume
+//  keys adjust an external monitor. Modeled on the macOS Tahoe system OSD: a
+//  compact card in the top-right corner showing the monitor's name, an icon and
+//  a level bar. On macOS 26+ it uses real Liquid Glass via NSGlassEffectView —
+//  which keeps its content legible as the glass adapts — and the frosted HUD
+//  material on earlier macOS. We draw our own because Tahoe's system OSD no
+//  longer renders third-party slider values.
 //
 
 import AppKit
 import SwiftUI
-
-/// Private OSD.framework interface for driving the real macOS system HUD.
-@objc private protocol OSDManagerProtocol {
-    func showImage(_ image: Int, onDisplayID: CGDirectDisplayID, priority: UInt32,
-                   msecUntilFade: UInt32, filledChiclets: UInt32, totalChiclets: UInt32, locked: Bool)
-}
 
 @MainActor
 final class OSD {
@@ -29,49 +28,32 @@ final class OSD {
             case .volume: "speaker.wave.3.fill"
             }
         }
-
-        /// Image constants from the private OSD framework (kOSDGraphic…).
-        func systemImage(muted: Bool) -> Int {
-            switch self {
-            case .brightness: 1            // kOSDGraphicBacklight
-            case .volume: muted ? 4 : 3    // kOSDGraphicAudioSpeaker(Muted)
-            }
-        }
     }
+
+    /// Size of the card, echoing the macOS Tahoe system OSD proportions.
+    private static let size = NSSize(width: 300, height: 78)
+    private static let cornerRadius: CGFloat = 20
 
     private var panel: NSPanel?
     private var hideTask: Task<Void, Never>?
 
-    /// The shared OSDManager, resolved once. Nil if the private framework is
-    /// unavailable — callers then fall back to Shine's own overlay.
-    private static let systemManager: OSDManagerProtocol? = {
-        _ = dlopen("/System/Library/PrivateFrameworks/OSD.framework/Versions/A/OSD", RTLD_LAZY)
-        guard let cls = NSClassFromString("OSDManager"),
-              let shared = (cls as AnyObject).perform(NSSelectorFromString("sharedManager"))?
-                  .takeUnretainedValue()
-        else { return nil }
-        return unsafeBitCast(shared, to: OSDManagerProtocol.self)
-    }()
-
     private init() {}
 
     func show(_ kind: Kind, level: Float, on screen: NSScreen?) {
-        if AppState.shared.useSystemOSD, showSystem(kind, level: level, on: screen) {
-            return
-        }
         guard let screen = screen ?? NSScreen.main else { return }
 
-        let content = OSDContent(kind: kind, level: level)
-        let hosting = NSHostingView(rootView: content)
-        hosting.frame = NSRect(x: 0, y: 0, width: 220, height: 64)
-
         let panel = self.panel ?? makePanel()
-        panel.contentView = hosting
+        panel.contentView = makeContentView(kind: kind, level: level,
+                                             name: screen.localizedName)
 
-        let frame = screen.frame
-        let origin = NSPoint(x: frame.midX - hosting.frame.width / 2,
-                             y: frame.minY + 120)
-        panel.setFrame(NSRect(origin: origin, size: hosting.frame.size), display: true)
+        // Top-right corner, just below the menu bar, like the Tahoe system OSD.
+        let area = screen.visibleFrame
+        let margin: CGFloat = 16
+        let origin = NSPoint(x: area.maxX - Self.size.width - margin,
+                             y: area.maxY - Self.size.height - 12)
+        panel.setFrame(NSRect(origin: origin, size: Self.size), display: true)
+        // Recompute the drop shadow to follow the rounded card, not the window rect.
+        panel.invalidateShadow()
         panel.orderFrontRegardless()
         panel.alphaValue = 1
 
@@ -83,25 +65,41 @@ final class OSD {
         }
     }
 
-    /// Drives the real macOS HUD via OSDManager. Returns false (so the caller
-    /// can fall back) when the private framework isn't available.
-    private func showSystem(_ kind: Kind, level: Float, on screen: NSScreen?) -> Bool {
-        guard let manager = Self.systemManager else { return false }
-        let target = screen ?? NSScreen.main
-        let displayID = target.flatMap {
-            $0.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID
-        } ?? CGMainDisplayID()
+    /// Real behind-window blur (works on every macOS, unlike the buggy Tahoe
+    /// NSGlassEffectView) with the SwiftUI content — which adds the glass sheen
+    /// and edge highlight — layered on top.
+    private func makeContentView(kind: Kind, level: Float, name: String) -> NSView {
+        let bounds = NSRect(origin: .zero, size: Self.size)
 
-        let clamped = min(max(level, 0), 1)
-        let muted = kind == .volume && clamped == 0
-        manager.showImage(kind.systemImage(muted: muted),
-                          onDisplayID: displayID,
-                          priority: 0x1F4,
-                          msecUntilFade: 1500,
-                          filledChiclets: UInt32((clamped * 16).rounded()),
-                          totalChiclets: 16,
-                          locked: false)
-        return true
+        let effect = NSVisualEffectView(frame: bounds)
+        effect.material = .hudWindow
+        effect.blendingMode = .behindWindow
+        effect.state = .active
+        // Round via a mask image — clipping an NSVisualEffectView with
+        // layer.cornerRadius leaves dark corner artifacts.
+        effect.maskImage = Self.roundedMask(radius: Self.cornerRadius)
+
+        let hosting = NSHostingView(rootView: OSDContent(kind: kind, level: level, name: name))
+        hosting.frame = bounds
+        hosting.autoresizingMask = [.width, .height]
+        hosting.wantsLayer = true
+        hosting.layer?.backgroundColor = NSColor.clear.cgColor
+        effect.addSubview(hosting)
+        return effect
+    }
+
+    /// A resizable rounded-rectangle mask used to clip the visual-effect view
+    /// cleanly (no dark corners).
+    private static func roundedMask(radius: CGFloat) -> NSImage {
+        let side = radius * 2 + 1
+        let image = NSImage(size: NSSize(width: side, height: side), flipped: false) { rect in
+            NSColor.black.setFill()
+            NSBezierPath(roundedRect: rect, xRadius: radius, yRadius: radius).fill()
+            return true
+        }
+        image.capInsets = NSEdgeInsets(top: radius, left: radius, bottom: radius, right: radius)
+        image.resizingMode = .stretch
+        return image
     }
 
     private func makePanel() -> NSPanel {
@@ -112,7 +110,7 @@ final class OSD {
         panel.level = .screenSaver
         panel.isOpaque = false
         panel.backgroundColor = .clear
-        panel.hasShadow = false
+        panel.hasShadow = true
         panel.ignoresMouseEvents = true
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
         self.panel = panel
@@ -130,31 +128,109 @@ final class OSD {
     }
 }
 
-private struct OSDContent: View {
+struct OSDContent: View {
     let kind: OSD.Kind
     let level: Float
+    let name: String
+    /// Foreground color: adaptive `.primary` on Liquid Glass, `.white` on the
+    /// always-dark frosted material.
+    var tint: Color = .white
+
+    private var fraction: CGFloat { CGFloat(min(max(level, 0), 1)) }
+
+    /// Small "min" icon at the left end of the slider.
+    private var minIcon: String {
+        kind == .brightness ? "sun.min.fill" : "speaker.fill"
+    }
+
+    /// Large "max" icon at the right end (muted speaker when volume is off).
+    private var maxIcon: String {
+        switch kind {
+        case .brightness: "sun.max.fill"
+        case .volume: level == 0 ? "speaker.slash.fill" : "speaker.wave.3.fill"
+        }
+    }
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: level == 0 && kind == .volume ? "speaker.slash.fill" : kind.symbolName)
-                .font(.system(size: 22, weight: .medium))
-                .foregroundStyle(.white)
-                .frame(width: 28)
+        VStack(alignment: .leading, spacing: 9) {
+            Text(name)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(tint.opacity(0.9))
+                .lineLimit(1)
 
-            // 16 segments, mirroring the classic macOS key-press HUD.
-            HStack(spacing: 2) {
-                ForEach(0..<16, id: \.self) { index in
-                    RoundedRectangle(cornerRadius: 1.5)
-                        .fill(Float(index) < level * 16 ? Color.white : Color.white.opacity(0.25))
-                        .frame(height: 7)
-                }
+            HStack(spacing: 9) {
+                Image(systemName: minIcon)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(tint.opacity(0.9))
+                    .frame(width: 16)
+
+                DottedSlider(fraction: fraction, tint: tint)
+                    .frame(height: 8)
+
+                Image(systemName: maxIcon)
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(tint)
+                    .frame(width: 22)
             }
         }
-        .padding(.horizontal, 18)
-        .frame(width: 220, height: 64)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .frame(width: 300, height: 78, alignment: .leading)
+        // Sheen + specular highlight + bright rim sell the glass look on top of
+        // the real blur behind the window.
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.black.opacity(0.55))
+            LinearGradient(colors: [.white.opacity(0.10), .white.opacity(0.02)],
+                           startPoint: .top, endPoint: .bottom)
+                .clipShape(glassShape)
+                .allowsHitTesting(false)
         )
+        .overlay(
+            // Very soft light reflection near the top.
+            glassShape
+                .fill(LinearGradient(colors: [.white.opacity(0.07), .clear],
+                                     startPoint: .top, endPoint: .center))
+                .blendMode(.plusLighter)
+                .allowsHitTesting(false)
+        )
+        .overlay(
+            // Faint uniform rim.
+            glassShape
+                .strokeBorder(
+                    LinearGradient(colors: [.white.opacity(0.14), .white.opacity(0.05)],
+                                   startPoint: .top, endPoint: .bottom),
+                    lineWidth: 1)
+        )
+    }
+
+    private var glassShape: RoundedRectangle {
+        RoundedRectangle(cornerRadius: 20, style: .continuous)
+    }
+}
+
+/// The macOS-style level track: a dotted rail with a solid rounded fill over the
+/// portion up to the current value.
+private struct DottedSlider: View {
+    let fraction: CGFloat
+    let tint: Color
+
+    var body: some View {
+        GeometryReader { geo in
+            let width = geo.size.width
+            let dotCount = max(2, Int(width / 11))
+            ZStack(alignment: .leading) {
+                HStack(spacing: 0) {
+                    ForEach(0..<dotCount, id: \.self) { index in
+                        Circle()
+                            .fill(tint.opacity(0.35))
+                            .frame(width: 3, height: 3)
+                        if index < dotCount - 1 { Spacer(minLength: 0) }
+                    }
+                }
+                Capsule()
+                    .fill(tint)
+                    .frame(width: max(6, width * fraction), height: 6)
+            }
+            .frame(height: geo.size.height, alignment: .center)
+        }
     }
 }

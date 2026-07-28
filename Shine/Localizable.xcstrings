@@ -1,316 +1,299 @@
 {
-  "sourceLanguage": "en",
-  "strings": {
-    "A new version can be downloaded from GitHub.": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GitHub'dan yeni bir sürüm indirilebilir."
+  "sourceLanguage" : "en",
+  "strings" : {
+    "A new version can be downloaded from GitHub." : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub'dan yeni bir sürüm indirilebilir."
           }
         }
       }
     },
-    "Accessibility permission needed": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Erişilebilirlik izni gerekiyor"
+    "Accessibility permission needed" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erişilebilirlik izni gerekiyor"
           }
         }
       }
     },
-    "After an update, remove Shine from the list and re-add it.": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bir güncellemeden sonra Shine'ı listeden kaldırıp yeniden ekleyin."
+    "After an update, remove Shine from the list and re-add it." : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bir güncellemeden sonra Shine'ı listeden kaldırıp yeniden ekleyin."
           }
         }
       }
     },
-    "Brightness keys control monitor under pointer": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Parlaklık tuşları imlecin üzerindeki monitörü denetler"
+    "Brightness keys control monitor under pointer" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parlaklık tuşları imlecin üzerindeki monitörü denetler"
           }
         }
       }
     },
-    "Cancel": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "İptal"
+    "Cancel" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İptal"
           }
         }
       }
     },
-    "DDC is not available on this Mac.": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bu Mac'te DDC kullanılamıyor."
+    "DDC is not available on this Mac." : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu Mac'te DDC kullanılamıyor."
           }
         }
       }
     },
-    "Dismiss": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kapat"
+    "Dismiss" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kapat"
           }
         }
       }
     },
-    "Download": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "İndir"
+    "Download" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İndir"
           }
         }
       }
     },
-    "External Display": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Harici Ekran"
+    "External Display" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Harici Ekran"
           }
         }
       }
     },
-    "Hide Icon": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Simgeyi Gizle"
+    "Hide Icon" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simgeyi Gizle"
           }
         }
       }
     },
-    "Hide the menu bar icon?": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Menü çubuğu simgesi gizlensin mi?"
+    "Hide the menu bar icon?" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menü çubuğu simgesi gizlensin mi?"
           }
         }
       }
     },
-    "Launch Shine at login": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Açılışta Shine'ı başlat"
+    "Launch Shine at login" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Açılışta Shine'ı başlat"
           }
         }
       }
     },
-    "Link brightness — control all displays with one slider": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Parlaklığı bağla — tüm ekranları tek kaydırıcıyla denetle"
+    "Link brightness — control all displays with one slider" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parlaklığı bağla — tüm ekranları tek kaydırıcıyla denetle"
           }
         }
       }
     },
-    "No DDC reply": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "DDC yanıtı yok"
+    "No DDC reply" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DDC yanıtı yok"
           }
         }
       }
     },
-    "No external display detected.": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Harici ekran algılanmadı."
+    "No external display detected." : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Harici ekran algılanmadı."
           }
         }
       }
     },
-    "Open System Settings…": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sistem Ayarları'nı Aç…"
+    "Open System Settings…" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistem Ayarları'nı Aç…"
           }
         }
       }
     },
-    "Quit Shine": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Shine'dan Çık"
+    "Quit Shine" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shine'dan Çık"
           }
         }
       }
     },
-    "Refresh Displays": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ekranları Yenile"
+    "Refresh Displays" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ekranları Yenile"
           }
         }
       }
     },
-    "Shine %@ is available": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Shine %@ kullanılabilir"
+    "Shine" : {
+
+    },
+    "Shine %@ is available" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shine %@ kullanılabilir"
           }
         }
       }
     },
-    "Shine keeps running and the keyboard keys keep working. To show the icon again, open Shine from Launchpad or Finder.": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Shine çalışmaya ve klavye tuşları işlev görmeye devam eder. Simgeyi yeniden göstermek için Shine'ı Launchpad veya Finder'dan açın."
+    "Shine keeps running and the keyboard keys keep working. To show the icon again, open Shine from Launchpad or Finder." : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shine çalışmaya ve klavye tuşları işlev görmeye devam eder. Simgeyi yeniden göstermek için Shine'ı Launchpad veya Finder'dan açın."
           }
         }
       }
     },
-    "Shine needs Accessibility access to capture the keyboard brightness and volume keys.": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Shine, klavyedeki parlaklık ve ses tuşlarını yakalamak için Erişilebilirlik erişimine ihtiyaç duyar."
+    "Shine needs Accessibility access to capture the keyboard brightness and volume keys." : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shine, klavyedeki parlaklık ve ses tuşlarını yakalamak için Erişilebilirlik erişimine ihtiyaç duyar."
           }
         }
       }
     },
-    "Show percentage next to sliders": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kaydırıcıların yanında yüzdeyi göster"
+    "Show percentage next to sliders" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kaydırıcıların yanında yüzdeyi göster"
           }
         }
       }
     },
-    "Show the built-in macOS brightness/volume HUD instead of Shine's own overlay": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Shine'ın kendi katmanı yerine macOS'un yerleşik parlaklık/ses HUD'unu göster"
+    "Snap sliders to 25% / 50% / 75% / 100%" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kaydırıcıları %25 / %50 / %75 / %100 değerlerine yasla"
           }
         }
       }
     },
-    "Snap sliders to 25% / 50% / 75% / 100%": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kaydırıcıları %25 / %50 / %75 / %100 değerlerine yasla"
+    "Switch the monitor's input source (e.g. hand it to a console)" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monitörün giriş kaynağını değiştir (ör. bir konsola devret)"
           }
         }
       }
     },
-    "Switch the monitor's input source (e.g. hand it to a console)": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Monitörün giriş kaynağını değiştir (ör. bir konsola devret)"
+    "The monitor did not answer DDC reads. Controls may still work; enable DDC/CI in the monitor's on-screen menu if they don't." : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monitör DDC okumalarına yanıt vermedi. Denetimler yine de çalışabilir; çalışmazsa monitörün ekran menüsünden DDC/CI'yı etkinleştirin."
           }
         }
       }
     },
-    "The monitor did not answer DDC reads. Controls may still work; enable DDC/CI in the monitor's on-screen menu if they don't.": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Monitör DDC okumalarına yanıt vermedi. Denetimler yine de çalışabilir; çalışmazsa monitörün ekran menüsünden DDC/CI'yı etkinleştirin."
+    "Turn this monitor back on" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu monitörü yeniden aç"
           }
         }
       }
     },
-    "Turn this monitor back on": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bu monitörü yeniden aç"
+    "Turn this monitor off (cut the connection)" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu monitörü kapat (bağlantıyı kes)"
           }
         }
       }
     },
-    "Turn this monitor off (cut the connection)": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bu monitörü kapat (bağlantıyı kes)"
+    "Unlink brightness — control each display individually" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parlaklık bağını çöz — her ekranı ayrı ayrı denetle"
           }
         }
       }
     },
-    "Unlink brightness — control each display individually": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Parlaklık bağını çöz — her ekranı ayrı ayrı denetle"
-          }
-        }
-      }
-    },
-    "Use the macOS system HUD": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "macOS sistem HUD'unu kullan"
-          }
-        }
-      }
-    },
-    "Volume keys control monitor speakers": {
-      "localizations": {
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ses tuşları monitör hoparlörlerini denetler"
+    "Volume keys control monitor speakers" : {
+      "localizations" : {
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ses tuşları monitör hoparlörlerini denetler"
           }
         }
       }
     }
   },
-  "version": "1.0"
+  "version" : "1.0"
 }

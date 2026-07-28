@@ -46,12 +46,6 @@ final class AppState {
         didSet { UserDefaults.standard.set(snapToQuarters, forKey: "snapToQuarters") }
     }
 
-    /// Shows the real macOS system HUD (via the private OSD framework) instead of
-    /// Shine's own overlay when the brightness / volume keys adjust a monitor.
-    var useSystemOSD: Bool = UserDefaults.standard.object(forKey: "useSystemOSD") as? Bool ?? false {
-        didSet { UserDefaults.standard.set(useSystemOSD, forKey: "useSystemOSD") }
-    }
-
     /// Applies quarter-mark snapping when `snapToQuarters` is enabled, otherwise
     /// returns the value unchanged. Used to wrap slider set closures.
     func snapped(_ value: Float) -> Float {
