@@ -22,7 +22,10 @@ final class AppState {
 
     /// The menu bar icon can be hidden; relaunching the app shows it again.
     var menuBarIconVisible: Bool = UserDefaults.standard.object(forKey: "menuBarIconVisible") as? Bool ?? true {
-        didSet { UserDefaults.standard.set(menuBarIconVisible, forKey: "menuBarIconVisible") }
+        didSet {
+            UserDefaults.standard.set(menuBarIconVisible, forKey: "menuBarIconVisible")
+            MenuBarController.shared.setIconVisible(menuBarIconVisible)
+        }
     }
 
     var brightnessKeysEnabled: Bool = UserDefaults.standard.object(forKey: "brightnessKeys") as? Bool ?? true {
@@ -143,9 +146,127 @@ final class AppState {
 /// Restores the menu bar icon when the user opens the app while it is
 /// already running (e.g. from Launchpad or Finder after hiding the icon).
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        MenuBarController.shared.start()
+    }
+
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
         AppState.shared.menuBarIconVisible = true
         return true
+    }
+}
+
+/// Owns the actual panel that appears beneath the status item. `MenuBarExtra`
+/// uses a system-owned material window that flattens custom glass effects;
+/// using a transparent borderless panel lets `NSGlassEffectView` be the root
+/// surface, like the Control Center panel.
+@MainActor
+final class MenuBarController: NSObject {
+    static let shared = MenuBarController()
+
+    private let panelSize = NSSize(width: 320, height: 650)
+    private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+    private var panel: NSPanel?
+    private var outsideClickMonitor: Any?
+
+    private override init() {
+        super.init()
+        statusItem.button?.image = NSImage(systemSymbolName: "sun.max.fill", accessibilityDescription: "Shine")
+        statusItem.button?.target = self
+        statusItem.button?.action = #selector(togglePanel)
+    }
+
+    func start() {
+        setIconVisible(AppState.shared.menuBarIconVisible)
+    }
+
+    func setIconVisible(_ isVisible: Bool) {
+        statusItem.isVisible = isVisible
+        if !isVisible { dismissPanel() }
+    }
+
+    @objc private func togglePanel() {
+        guard let panel else {
+            showPanel()
+            return
+        }
+        panel.isVisible ? dismissPanel() : showPanel()
+    }
+
+    private func showPanel() {
+        let panel = panel ?? makePanel()
+        position(panel)
+        panel.orderFrontRegardless()
+        installOutsideClickMonitor()
+    }
+
+    private func dismissPanel() {
+        panel?.orderOut(nil)
+        if let outsideClickMonitor {
+            NSEvent.removeMonitor(outsideClickMonitor)
+            self.outsideClickMonitor = nil
+        }
+    }
+
+    private func makePanel() -> NSPanel {
+        let panel = NSPanel(
+            contentRect: NSRect(origin: .zero, size: panelSize),
+            styleMask: [.borderless, .nonactivatingPanel],
+            backing: .buffered,
+            defer: false
+        )
+        panel.isOpaque = false
+        panel.backgroundColor = .clear
+        panel.hasShadow = true
+        panel.level = .statusBar
+        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+
+        let hostedContent = NSHostingView(rootView: MenuView().environment(AppState.shared))
+        let material: NSView
+        if #available(macOS 26.0, *) {
+            // The SwiftUI cards provide the glass. Keeping this root view clear
+            // prevents the full panel from adding a second frosted layer.
+            let root = NSView(frame: NSRect(origin: .zero, size: panelSize))
+            hostedContent.frame = root.bounds
+            hostedContent.autoresizingMask = [.width, .height]
+            root.addSubview(hostedContent)
+            material = root
+        } else {
+            let effect = NSVisualEffectView(frame: NSRect(origin: .zero, size: panelSize))
+            effect.material = .menu
+            effect.blendingMode = .behindWindow
+            effect.state = .active
+            hostedContent.frame = effect.bounds
+            hostedContent.autoresizingMask = [.width, .height]
+            effect.addSubview(hostedContent)
+            material = effect
+        }
+        material.autoresizingMask = [.width, .height]
+        panel.contentView = material
+        self.panel = panel
+        return panel
+    }
+
+    private func position(_ panel: NSPanel) {
+        guard let button = statusItem.button, let window = button.window else { return }
+        let buttonFrame = window.convertToScreen(button.convert(button.bounds, to: nil))
+        let visibleFrame = window.screen?.visibleFrame ?? NSScreen.main?.visibleFrame ?? .zero
+        panel.setFrameOrigin(NSPoint(
+            x: max(visibleFrame.minX + 8, min(buttonFrame.midX - panelSize.width / 2, visibleFrame.maxX - panelSize.width - 8)),
+            y: max(visibleFrame.minY + 8, buttonFrame.minY - panelSize.height - 1)
+        ))
+    }
+
+    private func installOutsideClickMonitor() {
+        guard outsideClickMonitor == nil else { return }
+        outsideClickMonitor = NSEvent.addGlobalMonitorForEvents(
+            matching: [.leftMouseDown, .rightMouseDown]
+        ) { [weak self] event in
+            guard let self, let panel = self.panel else { return }
+            if !panel.frame.contains(event.locationInWindow) {
+                self.dismissPanel()
+            }
+        }
     }
 }
 
@@ -158,11 +279,8 @@ struct ShineApp: App {
     }
 
     var body: some Scene {
-        MenuBarExtra("Shine", systemImage: "sun.max.fill",
-                     isInserted: Bindable(AppState.shared).menuBarIconVisible) {
-            MenuView()
-                .environment(AppState.shared)
+        Settings {
+            EmptyView()
         }
-        .menuBarExtraStyle(.window)
     }
 }

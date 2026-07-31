@@ -12,46 +12,63 @@ struct MenuView: View {
     @Environment(AppState.self) private var appState
 
     var body: some View {
+        if #available(macOS 26.0, *) {
+            GlassEffectContainer(spacing: 12) {
+                menuContent
+            }
+        } else {
+            menuContent
+        }
+    }
+
+    private var menuContent: some View {
         @Bindable var appState = appState
 
-        VStack(alignment: .leading, spacing: 14) {
+        return VStack(alignment: .leading, spacing: 12) {
             if appState.updateAvailable {
-                updateBanner
+                updateBanner.controlCenterGlassCard()
             }
 
             if !appState.accessibilityGranted {
-                permissionBanner
+                permissionBanner.controlCenterGlassCard()
             }
 
             if !appState.displayManager.ddcSupported {
                 Label("DDC is not available on this Mac.", systemImage: "exclamationmark.triangle.fill")
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(.white)
+                    .padding(12)
+                    .controlCenterGlassCard()
             } else if appState.displayManager.displays.isEmpty {
                 Label("No external display detected.", systemImage: "display.trianglebadge.exclamationmark")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.82))
+                    .padding(12)
+                    .controlCenterGlassCard()
             } else {
                 if appState.brightnessLinked && appState.displayManager.displays.count > 1 {
                     linkedBrightnessSlider
+                        .padding(12)
+                        .controlCenterGlassCard()
                 }
                 ForEach(appState.displayManager.displays) { display in
                     DisplaySection(display: display, showBrightness: !appState.brightnessLinked || appState.displayManager.displays.count <= 1)
                 }
             }
 
-            Divider()
-
-            Toggle("Brightness keys control monitor under pointer", isOn: $appState.brightnessKeysEnabled)
-                .toggleStyle(.checkbox)
-            Toggle("Volume keys control monitor speakers", isOn: $appState.volumeKeysEnabled)
-                .toggleStyle(.checkbox)
-            Toggle("Show percentage next to sliders", isOn: $appState.showSliderPercentages)
-                .toggleStyle(.checkbox)
-            Toggle("Snap sliders to 25% / 50% / 75% / 100%", isOn: $appState.snapToQuarters)
-                .toggleStyle(.checkbox)
-            Toggle("Launch Shine at login", isOn: $appState.launchAtLogin)
-                .toggleStyle(.checkbox)
-
-            Divider()
+            VStack(alignment: .leading, spacing: 10) {
+                Toggle("Brightness keys control monitor under pointer", isOn: $appState.brightnessKeysEnabled)
+                    .toggleStyle(GlassCheckboxToggleStyle())
+                Toggle("Volume keys control monitor speakers", isOn: $appState.volumeKeysEnabled)
+                    .toggleStyle(GlassCheckboxToggleStyle())
+                Divider()
+                Toggle("Show percentage next to sliders", isOn: $appState.showSliderPercentages)
+                    .toggleStyle(GlassCheckboxToggleStyle())
+                Toggle("Snap sliders to 25% / 50% / 75% / 100%", isOn: $appState.snapToQuarters)
+                    .toggleStyle(GlassCheckboxToggleStyle())
+                Toggle("Launch Shine at login", isOn: $appState.launchAtLogin)
+                    .toggleStyle(GlassCheckboxToggleStyle())
+            }
+            .padding(12)
+            .controlCenterGlassCard()
 
             HStack {
                 Button("Refresh Displays") {
@@ -66,9 +83,14 @@ struct MenuView: View {
                 }
             }
             .controlSize(.small)
+            .padding(8)
+            .controlCenterGlassCard()
         }
-        .padding(14)
-        .frame(width: 320)
+        .padding(.horizontal, 14)
+        .padding(.bottom, 14)
+        .padding(.top, 5)
+        .frame( maxHeight: .infinity, alignment: .top)
+        .foregroundStyle(.white)
     }
 
     /// Hides the menu bar icon after explaining how to bring it back.
@@ -89,12 +111,13 @@ struct MenuView: View {
         return VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 8) {
                 Image(systemName: "sun.max.fill")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.82))
                     .frame(width: 16)
                 Slider(value: Binding(
                     get: { appState.displayManager.averageBrightness },
                     set: { appState.displayManager.setBrightnessAll(appState.snapped($0)) }
                 ))
+                .tint(.blue)
                 if appState.showSliderPercentages {
                     PercentLabel(value: appState.displayManager.averageBrightness)
                 }
@@ -102,7 +125,7 @@ struct MenuView: View {
                     appState.brightnessLinked = false
                 } label: {
                     Image(systemName: "link")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.white.opacity(0.82))
                 }
                 .buttonStyle(.plain)
                 .help("Unlink brightness — control each display individually")
@@ -117,7 +140,7 @@ struct MenuView: View {
                 .font(.headline)
             Text("A new version can be downloaded from GitHub.")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.82))
             HStack(spacing: 8) {
                 Button("Download") {
                     if let url = appState.updateURL { NSWorkspace.shared.open(url) }
@@ -132,7 +155,6 @@ struct MenuView: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 8).fill(.blue.opacity(0.12)))
     }
 
     private var permissionBanner: some View {
@@ -141,10 +163,10 @@ struct MenuView: View {
                 .font(.headline)
             Text("Shine needs Accessibility access to capture the keyboard brightness and volume keys.")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.82))
             Text("After an update, remove Shine from the list and re-add it.")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.82))
             Button("Open System Settings…") {
                 KeyboardManager.openAccessibilitySettings()
             }
@@ -152,7 +174,51 @@ struct MenuView: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 8).fill(.orange.opacity(0.15)))
+    }
+}
+
+private extension View {
+    /// A discrete interactive Liquid Glass surface, matching the grouped
+    /// controls in Control Center instead of one flat sheet behind the menu.
+    @ViewBuilder
+    func controlCenterGlassCard() -> some View {
+        if #available(macOS 26.0, *) {
+            self.glassEffect(
+                .clear.interactive(),
+                in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+            )
+        } else {
+            self.background(
+                .regularMaterial,
+                in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+            )
+        }
+    }
+}
+
+/// Keeps checkbox outlines and checkmarks legible on a transparent glass card.
+private struct GlassCheckboxToggleStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        Button {
+            configuration.isOn.toggle()
+        } label: {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        .fill(configuration.isOn ? .white.opacity(0.20) : .clear)
+                    RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        .strokeBorder(.white.opacity(configuration.isOn ? 1 : 0.72), lineWidth: 1.25)
+                    if configuration.isOn {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(.white)
+                    }
+                }
+                .frame(width: 16, height: 16)
+                configuration.label
+            }
+        }
+        .buttonStyle(.plain)
     }
 }
 
@@ -180,7 +246,7 @@ private struct DisplaySection: View {
                 if !display.respondsToDDC {
                     Text("No DDC reply")
                         .font(.caption2)
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(.white.opacity(0.82))
                         .help("The monitor did not answer DDC reads. Controls may still work; enable DDC/CI in the monitor's on-screen menu if they don't.")
                 }
                 Spacer()
@@ -203,7 +269,7 @@ private struct DisplaySection: View {
                 .menuStyle(.borderlessButton)
                 .menuIndicator(.hidden)
                 .fixedSize()
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.82))
                 .help("Switch the monitor's input source (e.g. hand it to a console)")
 
                 Button {
@@ -213,7 +279,7 @@ private struct DisplaySection: View {
                         .frame(width: 16)
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(display.isOn ? Color.secondary : Color.orange)
+                .foregroundStyle(.white.opacity(display.isOn ? 0.82 : 0.45))
                 .help(display.isOn
                       ? LocalizedStringKey("Turn this monitor off (cut the connection)")
                       : LocalizedStringKey("Turn this monitor back on"))
@@ -223,12 +289,13 @@ private struct DisplaySection: View {
                 if showBrightness {
                     HStack(spacing: 8) {
                         Image(systemName: "sun.max.fill")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.white.opacity(0.82))
                             .frame(width: 16)
                         Slider(value: Binding(
                             get: { display.brightness },
                             set: { display.setBrightness(appState.snapped($0)) }
                         ))
+                        .tint(.blue)
                         if appState.showSliderPercentages {
                             PercentLabel(value: display.brightness)
                         }
@@ -237,7 +304,7 @@ private struct DisplaySection: View {
                                 appState.brightnessLinked = true
                             } label: {
                                 Image(systemName: "link")
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(.white.opacity(0.82))
                             }
                             .buttonStyle(.plain)
                             .help("Link brightness — control all displays with one slider")
@@ -247,12 +314,13 @@ private struct DisplaySection: View {
 
                 HStack(spacing: 8) {
                     Image(systemName: "circle.lefthalf.filled")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.white.opacity(0.82))
                         .frame(width: 16)
                     Slider(value: Binding(
                         get: { display.contrast },
                         set: { display.setContrast(appState.snapped($0)) }
                     ))
+                    .tint(.blue)
                     if appState.showSliderPercentages {
                         PercentLabel(value: display.contrast)
                     }
@@ -266,11 +334,12 @@ private struct DisplaySection: View {
                             .frame(width: 16)
                     }
                     .buttonStyle(.plain)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.82))
                     Slider(value: Binding(
                         get: { display.muted ? 0 : display.volume },
                         set: { display.setVolume(appState.snapped($0)) }
                     ))
+                    .tint(.blue)
                     if appState.showSliderPercentages {
                         PercentLabel(value: display.muted ? 0 : display.volume)
                     }
@@ -279,6 +348,8 @@ private struct DisplaySection: View {
             .disabled(!display.isOn)
             .opacity(display.isOn ? 1 : 0.4)
         }
+        .padding(12)
+        .controlCenterGlassCard()
     }
 }
 
@@ -291,7 +362,7 @@ private struct PercentLabel: View {
         // current locale (e.g. "50%" in English, "%50" in Turkish).
         Text(Double(value).formatted(.percent.precision(.fractionLength(0))))
             .font(.caption.monospacedDigit())
-            .foregroundStyle(.secondary)
+            .foregroundStyle(.white.opacity(0.82))
             .frame(width: 40, alignment: .trailing)
     }
 }
