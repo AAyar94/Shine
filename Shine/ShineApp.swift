@@ -156,18 +156,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
-/// Owns the actual panel that appears beneath the status item. `MenuBarExtra`
-/// uses a system-owned material window that flattens custom glass effects;
-/// using a transparent borderless panel lets `NSGlassEffectView` be the root
-/// surface, like the Control Center panel.
+/// Owns the popover that appears beneath the status item. It is a stock
+/// `NSPopover` on purpose: on macOS 26 the system renders popover chrome — one
+/// of the surfaces it applies Liquid Glass to — so the app supplies no glass or
+/// material of its own. Controls inside get the effect by being real system
+/// controls; container backgrounds stay plain material, as they do in Control
+/// Center. A hand-rolled borderless panel gets neither.
 @MainActor
 final class MenuBarController: NSObject {
     static let shared = MenuBarController()
 
     private let panelSize = NSSize(width: 320, height: 650)
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-    private var panel: NSPanel?
-    private var outsideClickMonitor: Any?
+    private var popover: NSPopover?
 
     private override init() {
         super.init()
@@ -186,87 +187,29 @@ final class MenuBarController: NSObject {
     }
 
     @objc private func togglePanel() {
-        guard let panel else {
-            showPanel()
-            return
+        let popover = popover ?? makePopover()
+        if popover.isShown {
+            popover.performClose(nil)
+        } else if let button = statusItem.button {
+            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         }
-        panel.isVisible ? dismissPanel() : showPanel()
     }
 
-    private func showPanel() {
-        let panel = panel ?? makePanel()
-        position(panel)
-        panel.orderFrontRegardless()
-        installOutsideClickMonitor()
+    private func makePopover() -> NSPopover {
+        let popover = NSPopover()
+        popover.contentSize = panelSize
+        // `.transient` closes on an outside click, so there is no global event
+        // monitor, and the system anchors it to the status item, so there is no
+        // manual placement either.
+        popover.behavior = .transient
+        popover.contentViewController =
+            NSHostingController(rootView: MenuView().environment(AppState.shared))
+        self.popover = popover
+        return popover
     }
 
     private func dismissPanel() {
-        panel?.orderOut(nil)
-        if let outsideClickMonitor {
-            NSEvent.removeMonitor(outsideClickMonitor)
-            self.outsideClickMonitor = nil
-        }
-    }
-
-    private func makePanel() -> NSPanel {
-        let panel = NSPanel(
-            contentRect: NSRect(origin: .zero, size: panelSize),
-            styleMask: [.borderless, .nonactivatingPanel],
-            backing: .buffered,
-            defer: false
-        )
-        panel.isOpaque = false
-        panel.backgroundColor = .clear
-        panel.hasShadow = true
-        panel.level = .statusBar
-        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-
-        let hostedContent = NSHostingView(rootView: MenuView().environment(AppState.shared))
-        let material: NSView
-        if #available(macOS 26.0, *) {
-            // The SwiftUI cards provide the glass. Keeping this root view clear
-            // prevents the full panel from adding a second frosted layer.
-            let root = NSView(frame: NSRect(origin: .zero, size: panelSize))
-            hostedContent.frame = root.bounds
-            hostedContent.autoresizingMask = [.width, .height]
-            root.addSubview(hostedContent)
-            material = root
-        } else {
-            let effect = NSVisualEffectView(frame: NSRect(origin: .zero, size: panelSize))
-            effect.material = .menu
-            effect.blendingMode = .behindWindow
-            effect.state = .active
-            hostedContent.frame = effect.bounds
-            hostedContent.autoresizingMask = [.width, .height]
-            effect.addSubview(hostedContent)
-            material = effect
-        }
-        material.autoresizingMask = [.width, .height]
-        panel.contentView = material
-        self.panel = panel
-        return panel
-    }
-
-    private func position(_ panel: NSPanel) {
-        guard let button = statusItem.button, let window = button.window else { return }
-        let buttonFrame = window.convertToScreen(button.convert(button.bounds, to: nil))
-        let visibleFrame = window.screen?.visibleFrame ?? NSScreen.main?.visibleFrame ?? .zero
-        panel.setFrameOrigin(NSPoint(
-            x: max(visibleFrame.minX + 8, min(buttonFrame.midX - panelSize.width / 2, visibleFrame.maxX - panelSize.width - 8)),
-            y: max(visibleFrame.minY + 8, buttonFrame.minY - panelSize.height - 1)
-        ))
-    }
-
-    private func installOutsideClickMonitor() {
-        guard outsideClickMonitor == nil else { return }
-        outsideClickMonitor = NSEvent.addGlobalMonitorForEvents(
-            matching: [.leftMouseDown, .rightMouseDown]
-        ) { [weak self] event in
-            guard let self, let panel = self.panel else { return }
-            if !panel.frame.contains(event.locationInWindow) {
-                self.dismissPanel()
-            }
-        }
+        popover?.performClose(nil)
     }
 }
 
