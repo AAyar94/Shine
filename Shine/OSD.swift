@@ -5,10 +5,11 @@
 //  A system-style HUD shown on the target display when the brightness / volume
 //  keys adjust an external monitor. Modeled on the macOS Tahoe system OSD: a
 //  compact card in the top-right corner showing the monitor's name, an icon and
-//  a level bar. On macOS 26+ it uses real Liquid Glass via NSGlassEffectView —
-//  which keeps its content legible as the glass adapts — and the frosted HUD
-//  material on earlier macOS. We draw our own because Tahoe's system OSD no
-//  longer renders third-party slider values.
+//  a level bar. It is deliberately not Liquid Glass: a floating HUD is not one
+//  of the surfaces Tahoe applies the system material to, and NSGlassEffectView
+//  in a borderless panel renders as plain frost. The behind-window blur plus a
+//  hand-drawn sheen reads better here and works on every macOS. We draw our own
+//  because Tahoe's system OSD no longer renders third-party slider values.
 //
 
 import AppKit
