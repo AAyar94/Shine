@@ -30,10 +30,12 @@ struct MenuView: View {
             if !appState.displayManager.ddcSupported {
                 Label("DDC is not available on this Mac.", systemImage: "exclamationmark.triangle.fill")
                     .foregroundStyle(.primary)
+                    .readableTextShadow()
                     .padding(12)
             } else if appState.displayManager.displays.isEmpty {
                 Label("No external display detected.", systemImage: "display.trianglebadge.exclamationmark")
                     .foregroundStyle(.secondary)
+                    .readableTextShadow()
                     .padding(12)
             } else {
                 if appState.brightnessLinked && appState.displayManager.displays.count > 1 {
@@ -83,6 +85,7 @@ struct MenuView: View {
     private func settingToggle(_ title: LocalizedStringKey, isOn: Binding<Bool>) -> some View {
         Toggle(isOn: isOn) {
             Text(title)
+                .readableTextShadow()
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .toggleStyle(.switch)
@@ -133,9 +136,11 @@ struct MenuView: View {
         return VStack(alignment: .leading, spacing: 6) {
             Label("Shine \(appState.availableVersion ?? "") is available", systemImage: "arrow.down.circle.fill")
                 .font(.headline)
+                .readableTextShadow()
             Text("A new version can be downloaded from GitHub.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+                .readableTextShadow()
             HStack(spacing: 8) {
                 Button("Download") {
                     if let url = appState.updateURL { NSWorkspace.shared.open(url) }
@@ -157,12 +162,15 @@ struct MenuView: View {
         VStack(alignment: .leading, spacing: 6) {
             Label("Accessibility permission needed", systemImage: "hand.raised.fill")
                 .font(.headline)
+                .readableTextShadow()
             Text("Shine needs Accessibility access to capture the keyboard brightness and volume keys.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+                .readableTextShadow()
             Text("After an update, remove Shine from the list and re-add it.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+                .readableTextShadow()
             Button("Open System Settings…") {
                 KeyboardManager.openAccessibilitySettings()
             }
@@ -171,6 +179,15 @@ struct MenuView: View {
         .glassButtons()
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+extension View {
+    /// A thin gray drop shadow behind text and glyphs. Liquid Glass lets the
+    /// desktop through, so labels can land on a bright wallpaper; this lifts
+    /// them off the background without reading as an effect.
+    func readableTextShadow() -> some View {
+        shadow(color: .gray.opacity(0.55), radius: 1, x: 0, y: 0.5)
     }
 }
 
@@ -220,10 +237,12 @@ private struct DisplaySection: View {
             HStack {
                 Text(display.name)
                     .font(.headline)
+                    .readableTextShadow()
                 if !display.respondsToDDC {
                     Text("No DDC reply")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
+                        .readableTextShadow()
                         .help("The monitor did not answer DDC reads. Controls may still work; enable DDC/CI in the monitor's on-screen menu if they don't.")
                 }
                 Spacer()
@@ -339,6 +358,7 @@ private struct PercentLabel: View {
         Text(Double(value).formatted(.percent.precision(.fractionLength(0))))
             .font(.caption.monospacedDigit())
             .foregroundStyle(.secondary)
+            .readableTextShadow()
             .frame(width: 40, alignment: .trailing)
     }
 }

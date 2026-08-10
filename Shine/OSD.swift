@@ -174,6 +174,7 @@ struct OSDContent: View {
                     .frame(width: 22)
             }
         }
+        .readableTextShadow()
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .frame(width: 300, height: 78, alignment: .leading)
