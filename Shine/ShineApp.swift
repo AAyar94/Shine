@@ -191,6 +191,10 @@ final class MenuBarController: NSObject {
         if popover.isShown {
             popover.performClose(nil)
         } else if let button = statusItem.button {
+            // A monitor can have changed input by itself since we last looked
+            // (auto-scan, or its own on-screen menu), so ask before drawing the
+            // menu that marks the current one.
+            AppState.shared.displayManager.refreshInputs()
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         }
     }

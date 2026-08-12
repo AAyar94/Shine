@@ -82,6 +82,15 @@ final class ExternalDisplay: Identifiable {
         if let value = port.read(VCP.mute) {
             muted = value.current == 1
         }
+        refreshInput()
+    }
+
+    /// Re-reads just the active input source (VCP 60). A monitor changes input on
+    /// its own — auto-scanning to another live input when the current one goes
+    /// away, or from its own on-screen menu — so the value we wrote last is not
+    /// necessarily the one it is showing. Cheap enough (one DDC read) to run
+    /// every time the menu opens, unlike the full refresh.
+    func refreshInput() {
         if let value = port.read(VCP.inputSource) {
             currentInput = value.current
             respondsToDDC = true
@@ -167,6 +176,15 @@ final class DisplayManager {
     func stepBrightnessAll(up: Bool) {
         for display in displays where display.isOn {
             display.stepBrightness(up: up)
+        }
+    }
+
+    /// Re-reads every monitor's active input source, so the checkmark in the
+    /// input menu reflects what the monitor is showing now rather than what we
+    /// last asked it to show.
+    func refreshInputs() {
+        for display in displays {
+            display.refreshInput()
         }
     }
 
