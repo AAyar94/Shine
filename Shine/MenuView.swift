@@ -76,7 +76,9 @@ struct MenuView: View {
         .padding(.horizontal, 14)
         .padding(.bottom, 14)
         .padding(.top, 5)
-        .frame( maxHeight: .infinity, alignment: .top)
+        // Fixed width, height from the content: the popover sizes itself to
+        // this, so it doesn't leave empty space below the last row.
+        .frame(width: 320, alignment: .top)
         .foregroundStyle(.primary)
     }
 

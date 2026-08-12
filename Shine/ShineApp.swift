@@ -166,7 +166,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 final class MenuBarController: NSObject {
     static let shared = MenuBarController()
 
-    private let panelSize = NSSize(width: 320, height: 650)
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     private var popover: NSPopover?
 
@@ -201,13 +200,15 @@ final class MenuBarController: NSObject {
 
     private func makePopover() -> NSPopover {
         let popover = NSPopover()
-        popover.contentSize = panelSize
         // `.transient` closes on an outside click, so there is no global event
         // monitor, and the system anchors it to the status item, so there is no
         // manual placement either.
         popover.behavior = .transient
-        popover.contentViewController =
-            NSHostingController(rootView: MenuView().environment(AppState.shared))
+        let hosting = NSHostingController(rootView: MenuView().environment(AppState.shared))
+        // Let the popover take its height from the SwiftUI content instead of a
+        // fixed size, which left a large empty strip under the buttons.
+        hosting.sizingOptions = [.preferredContentSize]
+        popover.contentViewController = hosting
         self.popover = popover
         return popover
     }
