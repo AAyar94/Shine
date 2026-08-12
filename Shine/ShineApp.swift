@@ -174,6 +174,11 @@ final class MenuBarController: NSObject {
         statusItem.button?.image = NSImage(systemSymbolName: "sun.max.fill", accessibilityDescription: "Shine")
         statusItem.button?.target = self
         statusItem.button?.action = #selector(togglePanel)
+        // Shine is an accessory app, so the popover only sees the clicks that
+        // reach us. Clicking anywhere else — another window or the desktop —
+        // makes that app active instead, which is our cue to close.
+        NotificationCenter.default.addObserver(self, selector: #selector(appDidResignActive),
+                                               name: NSApplication.didResignActiveNotification, object: nil)
     }
 
     func start() {
@@ -194,15 +199,26 @@ final class MenuBarController: NSObject {
             // (auto-scan, or its own on-screen menu), so ask before drawing the
             // menu that marks the current one.
             AppState.shared.displayManager.refreshInputs()
+            // An accessory app is not activated by a status item click, and a
+            // transient popover in an inactive app never receives the outside
+            // click that would dismiss it. Activating fixes both that and the
+            // keyboard focus inside the popover.
+            NSApp.activate()
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+            popover.contentViewController?.view.window?.makeKey()
         }
+    }
+
+    @objc private func appDidResignActive() {
+        dismissPanel()
     }
 
     private func makePopover() -> NSPopover {
         let popover = NSPopover()
         // `.transient` closes on an outside click, so there is no global event
         // monitor, and the system anchors it to the status item, so there is no
-        // manual placement either.
+        // manual placement either. It only fires while we are the active app,
+        // hence the activation in togglePanel().
         popover.behavior = .transient
         let hosting = NSHostingController(rootView: MenuView().environment(AppState.shared))
         // Let the popover take its height from the SwiftUI content instead of a
